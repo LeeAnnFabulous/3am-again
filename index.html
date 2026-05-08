@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3am Again</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream: #f5f0e8;
+      --cream-dark: #ede6d6;
+      --gold: #8B6914;
+      --gold-light: #a87d1a;
+      --gold-muted: #c4a55a;
+      --gold-faint: #e8d9b0;
+      --text: #3d2e0e;
+      --text-light: #6b5220;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--cream);
+      color: var(--text);
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+    }
+
+    /* Subtle grain texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* ── HEADER ── */
+    header {
+      text-align: center;
+      padding: 5rem 0 2.5rem;
+      animation: fadeUp 1.2s ease both;
+    }
+
+    .heart {
+      font-size: 1.1rem;
+      color: var(--gold);
+      display: block;
+      margin-bottom: 1rem;
+      letter-spacing: 0.2em;
+      opacity: 0.7;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.8rem, 8vw, 4.5rem);
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 2rem;
+    }
+
+    .intro {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-style: italic;
+      color: var(--text-light);
+      line-height: 1.8;
+      max-width: 520px;
+      margin: 0 auto 1rem;
+    }
+
+    .intro-sub {
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      color: var(--gold-muted);
+      text-transform: uppercase;
+      margin-top: 1.2rem;
+    }
+
+    .divider {
+      width: 60px;
+      height: 1px;
+      background: var(--gold-muted);
+      margin: 2.5rem auto;
+      opacity: 0.5;
+    }
+
+    /* ── CATEGORY NAV ── */
+    .category-nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-bottom: 3.5rem;
+      animation: fadeUp 1.2s 0.2s ease both;
+    }
+
+    .cat-btn {
+      background: none;
+      border: 1px solid var(--gold-muted);
+      color: var(--text-light);
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.5rem 1.2rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border-radius: 0;
+    }
+
+    .cat-btn:hover,
+    .cat-btn.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--cream);
+    }
+
+    /* ── PROMPT SECTIONS ── */
+    .sections-wrap {
+      animation: fadeUp 1.2s 0.4s ease both;
+    }
+
+    .prompt-section {
+      display: none;
+      margin-bottom: 4rem;
+    }
+
+    .prompt-section.visible {
+      display: block;
+    }
+
+    .section-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold-muted);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gold-faint);
+    }
+
+    /* Featured (random) prompt card */
+    .featured-prompt {
+      background: var(--cream-dark);
+      border: 1px solid var(--gold-faint);
+      padding: 2.2rem 2.4rem;
+      margin-bottom: 1.2rem;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+
+    .featured-prompt:hover { border-color: var(--gold-muted); }
+
+    .featured-prompt .prompt-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      line-height: 1.7;
+      color: var(--text);
+      font-style: italic;
+    }
+
+    .featured-prompt .shuffle-hint {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold-muted);
+      margin-top: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .shuffle-hint svg {
+      width: 10px;
+      height: 10px;
+      fill: none;
+      stroke: var(--gold-muted);
+      stroke-width: 1.5;
+    }
+
+    /* All prompts list */
+    .prompts-list {
+      display: none;
+    }
+
+    .prompts-list.open {
+      display: block;
+    }
+
+    .prompt-item {
+      padding: 1.1rem 0;
+      border-bottom: 1px solid var(--gold-faint);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      line-height: 1.65;
+      color: var(--text-light);
+      transition: color 0.2s ease;
+    }
+
+    .prompt-item:last-child { border-bottom: none; }
+    .prompt-item:hover { color: var(--text); }
+
+    .toggle-list-btn {
+      background: none;
+      border: none;
+      color: var(--gold-muted);
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0.8rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color 0.2s ease;
+      margin-bottom: 0.5rem;
+    }
+
+    .toggle-list-btn:hover { color: var(--gold); }
+
+    .toggle-list-btn .arrow {
+      display: inline-block;
+      transition: transform 0.25s ease;
+      font-size: 0.8rem;
+    }
+
+    .toggle-list-btn.open .arrow { transform: rotate(180deg); }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 3rem 0 4rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold-muted);
+      opacity: 0.6;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── COMMUNITY SECTION ── */
+    .community-section {
+      margin: 2rem 0 1rem;
+      animation: fadeUp 1.2s 0.6s ease both;
+    }
+
+    .community-intro {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--text-light);
+      line-height: 1.75;
+      margin-bottom: 2rem;
+    }
+
+    .form-block { margin-bottom: 2.5rem; }
+
+    .form-block .section-label { margin-bottom: 1.2rem; }
+
+    .form-group { margin-bottom: 1rem; }
+
+    .form-group label {
+      display: block;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      background: var(--cream-dark);
+      border: 1px solid var(--gold-faint);
+      color: var(--text);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      padding: 0.8rem 1rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+      border-radius: 0;
+      appearance: none;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus { border-color: var(--gold-muted); }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.6;
+    }
+
+    .submit-btn {
+      background: none;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 0.7rem 2rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      margin-top: 0.5rem;
+    }
+
+    .submit-btn:hover { background: var(--gold); color: var(--cream); }
+
+    .success-msg {
+      display: none;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--gold);
+      margin-top: 0.8rem;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 480px) {
+      .page-wrap { padding: 0 1.4rem; }
+      header { padding: 3.5rem 0 2rem; }
+      .featured-prompt { padding: 1.6rem 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <header>
+    <span class="heart">♥</span>
+    <h1>3am again</h1>
+    <p class="intro">You scanned the QR code! Welcome! If your late nights are anything like mine, you need to write it out. Pick your flavor of writing below, get your pen ready, and just write.</p>
+    <p class="intro">No rules, forget about grammar, just let it out. Don't forget to check back in and see if you feel differently. And remember: you're not alone.</p>
+    <p class="intro">If you have a prompt that's worked for you, please feel free to share, and if you have any feedback — we'd love to see that too!</p>
+    <p class="intro-sub">Sending Love. xoL</p>
+  </header>
+
+  <div class="divider"></div>
+
+  <nav class="category-nav">
+    <button class="cat-btn active" data-cat="all">All</button>
+    <button class="cat-btn" data-cat="general">General</button>
+    <button class="cat-btn" data-cat="creative">Creative</button>
+    <button class="cat-btn" data-cat="gratitude">Gratitude</button>
+    <button class="cat-btn" data-cat="love">Love</button>
+  </nav>
+
+  <div class="sections-wrap" id="sectionsWrap"></div>
+
+  <div class="divider"></div>
+
+  <div class="community-section">
+    <p class="community-intro">this journal is yours, but you're not alone in it. if a prompt helped you write something real, send it in — and if you have thoughts on how to make this better, we'd love to hear that too. ♥</p>
+
+    <div class="form-block">
+      <div class="section-label">Submit a Prompt</div>
+      <form id="promptForm">
+        <input type="hidden" name="form-type" value="Prompt Submission" />
+        <div class="form-group">
+          <label>Your prompt</label>
+          <textarea name="prompt" placeholder="write it out just as you'd want someone to see it..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Category (optional)</label>
+          <select name="category">
+            <option value="">— choose one —</option>
+            <option value="General">General</option>
+            <option value="Creative">Creative</option>
+            <option value="Gratitude">Obligatory Gratitude</option>
+            <option value="Love">Love &amp; Relationships</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Your name or how you'd like to be credited (optional)</label>
+          <input type="text" name="name" placeholder="or leave blank to stay anonymous" />
+        </div>
+        <button type="submit" class="submit-btn">Send it in</button>
+        <p class="success-msg" id="promptSuccess">thank you — we'll read every single one. ♥</p>
+      </form>
+    </div>
+
+    <div class="form-block">
+      <div class="section-label">Leave Feedback</div>
+      <form id="feedbackForm">
+        <input type="hidden" name="form-type" value="Feedback" />
+        <div class="form-group">
+          <label>What's on your mind?</label>
+          <textarea name="feedback" placeholder="thoughts, feelings, suggestions — anything goes..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Your name (optional)</label>
+          <input type="text" name="name" placeholder="or stay anonymous" />
+        </div>
+        <button type="submit" class="submit-btn">Send feedback</button>
+        <p class="success-msg" id="feedbackSuccess">got it — thank you for taking the time. ♥</p>
+      </form>
+    </div>
+  </div>
+
+  <footer>3am again &nbsp;♥&nbsp; write your way through it</footer>
+
+</div>
+
+<script>
+  const data = {
+    general: {
+      label: "General",
+      prompts: [
+        "What's going on right now?",
+        "Pick one thing that happened this week and write what happened in detail. Use all senses — and keep going — write yourself a different ending.",
+        "What are you pretending not to know? (you can rip out and burn this page after you're done)",
+        "Where in your body do you feel this feeling? Describe this for every feeling that won't go away.",
+        "Describe this feeling in every sensory way possible; look, feel, sound, taste? Does it have a smell?",
+        "What lyrics describe your life right now? It could be a song that's stuck in your head — try to find a connection or a reason why your brain is reminding you of this song.",
+        "Write a detailed story of what you'd absolutely rather be doing right now.",
+        "What is one thing you're proud of this week?",
+        "What memory keeps popping up for you lately?",
+        "What's something you heard when you were young that has stuck with you and why?",
+        "Write out some lyrics that mean a lot to you right now and write down why. You could do this one every day for a week or month and look back on it!",
+        "Pick one of the many thoughts flying through your mind tonight and follow it through. What do you need to make it real?",
+        "What have you been avoiding telling someone?",
+        "Imagine beauty standards are no longer a thing — take a sec to clear them from your mind. What about yourself do you love or think is so beautiful that you may not have thought was beautiful in the past?",
+        "Write out a perfect day in your perfect life. Include the things you love about your current life that you'd keep.",
+        "If money wasn't an issue, what would you spend your day doing?",
+        "What's the thing that you would be doing if you had all of the guts and didn't let anything hold you back? What stopped you? What's the first little teeny tiny step to get you there? If you're feeling ambitious, make a plan — write out the steps and remember it all starts with one little step!",
+        "Imagine beauty standards are no longer a thing — take a sec to clear them from your mind. What about yourself do you love or think is so beautiful that you may not have thought was beautiful in the past?"
+      ]
+    },
+    creative: {
+      label: "Creative",
+      prompts: [
+        "What does your anxiety (or feeling that won't go away) look like? Does it have a color? A sound? How much space does it take up? Where in your body is it?",
+        "If your heart had a floor plan what would it look like?",
+        "If your soul was a place what would it look like? Who would be there?",
+        "If this feeling had a texture — what would it feel like? Can you feel your body from its perspective?",
+        "Pick one thing that's around you — give it a personality, a back story... maybe a love interest?",
+        "There's an old Serbian proverb that says \"Be humble, for you are made of earth. Be noble, for you are made of stars.\" Which constellation do you love the most? Where in the sky do you feel like you belong?",
+        "Describe the last dream you had in detail.",
+        "We will always encourage daydreaming or fantasizing — write out what your current daydream is. Haven't been daydreaming? Give us what your ideal dream tonight would be.",
+        "Describe every feeling in your body right now — physical and emotional — in terms of weather.",
+        "Think about a place — any place (real or imagined) — describe it in detail. How does it relate to what's going on with you lately?",
+        "When was the last time you were in nature? Describe it. (If it's been a while, think about getting out there — the earth misses you ♥)",
+        "Someone once told me that there has never been an emotion that has felt the same way forever. If you can remember, write down the evolution of this feeling — do it backwards if it helps!",
+        "If you could describe yourself (or someone close to you) as anything but a human being — what would they be?"
+      ]
+    },
+    gratitude: {
+      label: "Obligatory Gratitude",
+      prompts: [
+        "Write, in detail, three things that didn't suck today... maybe even 3 things that made you laugh?",
+        "Think back to a moment that felt like love, but not romantic. It could be a kitty curling on your lap, a friend grabbing your hand, a family member saying something nice. Explain it in detail.",
+        "What would you miss if today disappeared?",
+        "What is the most beautiful thing someone has ever said to you?",
+        "What is the cutest thing that you've experienced in the last week?",
+        "Tell me about something you created that you're so proud of. Humility has no place here — I want you to brag!",
+        "Tell me about someone (pets included) that you absolutely love with every fiber of your being. Tell me every detail!",
+        "What is the best thing that's happened to you this year? This month? This week? Today?",
+        "What's something you do lately that you couldn't or wouldn't 5 years ago (or even a year ago)?",
+        "Who showed you kindness today? (Maybe write them a thank you letter?)",
+        "Describe the ways in which you're a better person than you were a year ago.",
+        "What's your favorite part of your body?",
+        "Describe something that didn't work out, but was for the better. What was the better?",
+        "Assume you're looking back on your life — what's a really good time that would make all of this worth it?",
+        "Assume you're looking back on your life — what's a really good time that would make all of this worth it?"
+      ]
+    },
+    love: {
+      label: "Love & Relationships",
+      prompts: [
+        "What are you telling yourself about them that might not be true?",
+        "Tell me, in grueling detail, how you met and the first time it changed. And read it imagining your best friend just sent it to you. Write down what advice you'd give them.",
+        "What did they love about you? What do you love about yourself? Make your list longer.",
+        "Describe your love life in terms of colors.",
+        "What do you already know?",
+        "What are three things that you can do now that you couldn't when you were together?",
+        "It's time to laugh — what's your most embarrassing love life story!",
+        "Look back at the relationship — tell us the version of yourself that you were when you were with them. Did you like that person or pieces of them? Which pieces could you bring into your life now?",
+        "We always talk about first kisses — tell me about your last one. Or your last memorable one (sometimes they're not that memorable).",
+        "Describe a time where physical touch felt like love to you.",
+        "Talk about a time that felt like REAL love (doesn't have to be romantic).",
+        "We tend to put romance at the top of the love hierarchy — write about a love in your life that's not romantic. Does it feel as important as romantic love? Why?",
+        "Describe the exact love you want. Include everything you can think of!",
+        "Describe the exact love you want to give. Include everything you can think of!"
+      ]
+    }
+  };
+
+  const catOrder = ['general','creative','gratitude','love'];
+  const sectionEls = {};
+  const featuredIndices = {};
+
+  function shuffle(arr) {
+    return arr.map(v => ({ v, s: Math.random() })).sort((a,b) => a.s - b.s).map(x => x.v);
+  }
+
+  function buildSections() {
+    const wrap = document.getElementById('sectionsWrap');
+    wrap.innerHTML = '';
+
+    catOrder.forEach(cat => {
+      const { label, prompts } = data[cat];
+      const idx = Math.floor(Math.random() * prompts.length);
+      featuredIndices[cat] = idx;
+
+      const sec = document.createElement('div');
+      sec.className = 'prompt-section visible';
+      sec.dataset.cat = cat;
+
+      sec.innerHTML = `
+        <div class="section-label">${label}</div>
+        <div class="featured-prompt" id="featured-${cat}">
+          <div class="prompt-text">${prompts[idx]}</div>
+          <div class="shuffle-hint">
+            <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 3h5v5M4 20l16-16M16 21h5v-5M4 4l16 16"/></svg>
+            tap to shuffle
+          </div>
+        </div>
+        <button class="toggle-list-btn" id="toggle-${cat}">
+          <span class="arrow">↓</span> Browse all ${label.toLowerCase()} prompts
+        </button>
+        <div class="prompts-list" id="list-${cat}">
+          ${prompts.map((p, i) => `<div class="prompt-item" data-cat="${cat}" data-idx="${i}">${p}</div>`).join('')}
+        </div>
+      `;
+
+      wrap.appendChild(sec);
+      sectionEls[cat] = sec;
+
+      // Shuffle featured on click
+      document.getElementById(`featured-${cat}`).addEventListener('click', () => {
+        const prompts = data[cat].prompts;
+        let newIdx;
+        do { newIdx = Math.floor(Math.random() * prompts.length); }
+        while (newIdx === featuredIndices[cat] && prompts.length > 1);
+        featuredIndices[cat] = newIdx;
+        const el = document.getElementById(`featured-${cat}`);
+        el.style.opacity = '0';
+        setTimeout(() => {
+          el.querySelector('.prompt-text').textContent = prompts[newIdx];
+          el.style.transition = 'opacity 0.35s ease';
+          el.style.opacity = '1';
+        }, 200);
+      });
+
+      // Toggle list
+      document.getElementById(`toggle-${cat}`).addEventListener('click', function() {
+        const list = document.getElementById(`list-${cat}`);
+        const isOpen = list.classList.toggle('open');
+        this.classList.toggle('open', isOpen);
+        this.querySelector('span').textContent = isOpen ? '↑' : '↓';
+        this.childNodes[1].textContent = isOpen
+          ? ` Hide ${label.toLowerCase()} prompts`
+          : ` Browse all ${label.toLowerCase()} prompts`;
+      });
+    });
+  }
+
+  function filterSections(cat) {
+    catOrder.forEach(c => {
+      const sec = sectionEls[c];
+      if (!sec) return;
+      if (cat === 'all' || cat === c) {
+        sec.classList.add('visible');
+      } else {
+        sec.classList.remove('visible');
+      }
+    });
+  }
+
+  // Category nav
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      filterSections(this.dataset.cat);
+    });
+  });
+
+  buildSections();
+
+  // Form submissions
+  async function handleForm(formId, successId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = form.querySelector('.submit-btn');
+      btn.textContent = 'sending...';
+      btn.disabled = true;
+      const formData = new FormData(form);
+      try {
+        const res = await fetch('https://formspree.io/f/mrejbyon', {
+          method: 'POST',
+          body: formData,
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          form.reset();
+          btn.style.display = 'none';
+          document.getElementById(successId).style.display = 'block';
+        } else {
+          btn.textContent = 'something went wrong — try again';
+          btn.disabled = false;
+        }
+      } catch {
+        btn.textContent = 'something went wrong — try again';
+        btn.disabled = false;
+      }
+    });
+  }
+
+  handleForm('promptForm', 'promptSuccess');
+  handleForm('feedbackForm', 'feedbackSuccess');
+</script>
+</body>
+</html>
